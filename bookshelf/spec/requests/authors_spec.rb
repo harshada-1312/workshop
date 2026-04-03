@@ -211,9 +211,8 @@ RSpec.describe 'Authors API', type: :request do
     end
 
     it 'returns 409 DEPENDENCY_EXISTS when author has books' do
-      pending 'Book model not yet created'
       author_with_books = create(:author)
-      create(:book, author: author_with_books)
+      create(:book, author: author_with_books, genre: 'Fiction')
       delete "/api/authors/#{author_with_books.id}"
       expect(response).to have_http_status(:conflict)
       expect(json_error[:code]).to eq('DEPENDENCY_EXISTS')
