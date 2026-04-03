@@ -1,0 +1,484 @@
+openapi: "3.0.3"
+info:
+  title: BookShelf API
+  description: Personal library management REST API
+  version: "1.0.0"
+servers:
+  - url: http://localhost:3000
+    description: Development
+
+paths:
+  # ──────────────────────────── Authors ────────────────────────────
+
+  /api/authors:
+    get:
+      summary: List authors
+      tags: [Authors]
+      parameters:
+        - name: page
+          in: query
+          schema: { type: integer, default: 1, minimum: 1 }
+          description: Page number
+        - name: per_page
+          in: query
+          schema: { type: integer, default: 20, minimum: 1, maximum: 100 }
+          description: Items per page
+        - name: sort_by
+          in: query
+          schema: { type: string, enum: [last_name, first_name, created_at, book_count], default: last_name }
+          description: Sort field
+        - name: sort_order
+          in: query
+          schema: { type: string, enum: [asc, desc], default: asc }
+          description: Sort direction
+        - name: search
+          in: query
+          schema: { type: string }
+          description: "Case-insensitive partial match on first_name and last_name"
+      responses:
+        "200":
+          description: Paginated list of authors
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AuthorListResponse"
+              example:
+                data:
+                  - id: 1
+                    first_name: Gabriel
+                    last_name: "Garcia Marquez"
+                    bio: "Colombian novelist and Nobel Prize laureate, widely regarded as one of the most significant authors of the 20th century."
+                    birth_year: 1927
+                    death_year: 2014
+                    website: "https://gabo.com"
+                    created_at: "2026-04-03T10:42:00.000Z"
+                    updated_at: "2026-04-03T10:42:00.000Z"
+                    book_count: 5
+                  - id: 2
+                    first_name: Ursula
+                    last_name: "K. Le Guin"
+                    bio: "American author best known for the Earthsea fantasy series and the Hainish science fiction cycle."
+                    birth_year: 1929
+                    death_year: 2018
+                    website: "https://ursulakleguin.com"
+                    created_at: "2026-04-03T10:43:00.000Z"
+                    updated_at: "2026-04-03T10:43:00.000Z"
+                    book_count: 8
+                meta:
+                  page: 1
+                  per_page: 20
+                  total_items: 47
+                  total_pages: 3
+        "400":
+          description: Invalid pagination parameters
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+              example:
+                error:
+                  code: BAD_REQUEST
+                  message: "page must be greater than 0"
+        "500":
+          $ref: "#/components/responses/InternalError"
+
+    post:
+      summary: Create an author
+      tags: [Authors]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AuthorInput"
+            example:
+              author:
+                first_name: Chimamanda Ngozi
+                last_name: Adichie
+                bio: "Nigerian writer whose works range from novels to short stories to nonfiction. Her 2013 TED talk 'We Should All Be Feminists' started a worldwide conversation about feminism."
+                birth_year: 1977
+                website: "https://chimamanda.com"
+      responses:
+        "201":
+          description: Author created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AuthorDetailResponse"
+              example:
+                data:
+                  id: 3
+                  first_name: Chimamanda Ngozi
+                  last_name: Adichie
+                  bio: "Nigerian writer whose works range from novels to short stories to nonfiction. Her 2013 TED talk 'We Should All Be Feminists' started a worldwide conversation about feminism."
+                  birth_year: 1977
+                  death_year: null
+                  website: "https://chimamanda.com"
+                  created_at: "2026-04-03T11:00:00.000Z"
+                  updated_at: "2026-04-03T11:00:00.000Z"
+                  book_count: 0
+                  recent_books: []
+        "400":
+          description: Missing or wrong Content-Type
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+              example:
+                error:
+                  code: BAD_REQUEST
+                  message: "Content-Type must be application/json"
+        "422":
+          description: Validation failed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ValidationErrorResponse"
+              example:
+                error:
+                  code: VALIDATION_ERROR
+                  message: "Validation failed"
+                  details:
+                    - field: first_name
+                      message: "can't be blank"
+                    - field: death_year
+                      message: "must be greater than or equal to birth year"
+        "500":
+          $ref: "#/components/responses/InternalError"
+
+  /api/authors/{id}:
+    get:
+      summary: Get author detail
+      tags: [Authors]
+      parameters:
+        - $ref: "#/components/parameters/AuthorId"
+      responses:
+        "200":
+          description: Author with book_count and recent_books
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AuthorDetailResponse"
+              example:
+                data:
+                  id: 1
+                  first_name: Gabriel
+                  last_name: "Garcia Marquez"
+                  bio: "Colombian novelist and Nobel Prize laureate, widely regarded as one of the most significant authors of the 20th century."
+                  birth_year: 1927
+                  death_year: 2014
+                  website: "https://gabo.com"
+                  created_at: "2026-04-03T10:42:00.000Z"
+                  updated_at: "2026-04-03T10:42:00.000Z"
+                  book_count: 5
+                  recent_books:
+                    - id: 12
+                      title: "One Hundred Years of Solitude"
+                      genre: Fiction
+                      rating: 4.5
+                      read_status: read
+                      date_added: "2026-04-01T08:00:00.000Z"
+                    - id: 15
+                      title: "Love in the Time of Cholera"
+                      genre: Fiction
+                      rating: 4.0
+                      read_status: reading
+                      date_added: "2026-03-15T12:30:00.000Z"
+        "404":
+          description: Author not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+              example:
+                error:
+                  code: NOT_FOUND
+                  message: "Couldn't find Author with 'id'=999"
+        "500":
+          $ref: "#/components/responses/InternalError"
+
+    put:
+      summary: Update an author
+      tags: [Authors]
+      parameters:
+        - $ref: "#/components/parameters/AuthorId"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AuthorInput"
+            example:
+              author:
+                bio: "Updated biography text for this author."
+      responses:
+        "200":
+          description: Author updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AuthorDetailResponse"
+        "400":
+          description: Missing or wrong Content-Type
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+              example:
+                error:
+                  code: BAD_REQUEST
+                  message: "Content-Type must be application/json"
+        "404":
+          description: Author not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+              example:
+                error:
+                  code: NOT_FOUND
+                  message: "Couldn't find Author with 'id'=999"
+        "422":
+          description: Validation failed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ValidationErrorResponse"
+        "500":
+          $ref: "#/components/responses/InternalError"
+
+    delete:
+      summary: Delete an author
+      tags: [Authors]
+      parameters:
+        - $ref: "#/components/parameters/AuthorId"
+      responses:
+        "204":
+          description: Author deleted
+        "404":
+          description: Author not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+              example:
+                error:
+                  code: NOT_FOUND
+                  message: "Couldn't find Author with 'id'=999"
+        "409":
+          description: Author has associated books
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+              example:
+                error:
+                  code: DEPENDENCY_EXISTS
+                  message: "Cannot delete author: 5 books are associated with this author"
+        "500":
+          $ref: "#/components/responses/InternalError"
+
+  /api/authors/{id}/books:
+    get:
+      summary: List books by author
+      tags: [Authors]
+      parameters:
+        - $ref: "#/components/parameters/AuthorId"
+        - name: page
+          in: query
+          schema: { type: integer, default: 1, minimum: 1 }
+        - name: per_page
+          in: query
+          schema: { type: integer, default: 20, minimum: 1, maximum: 100 }
+      responses:
+        "200":
+          description: Paginated list of books for this author
+          content:
+            application/json:
+              example:
+                data:
+                  - id: 12
+                    title: "One Hundred Years of Solitude"
+                    isbn: "9780060883287"
+                    genre: Fiction
+                    published_year: 1967
+                    rating: 4.5
+                    read_status: read
+                    author_name: "Gabriel Garcia Marquez"
+                  - id: 15
+                    title: "Love in the Time of Cholera"
+                    isbn: "9780307389732"
+                    genre: Fiction
+                    published_year: 1985
+                    rating: 4.0
+                    read_status: reading
+                    author_name: "Gabriel Garcia Marquez"
+                meta:
+                  page: 1
+                  per_page: 20
+                  total_items: 5
+                  total_pages: 1
+        "400":
+          description: Invalid pagination parameters
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "404":
+          description: Author not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+              example:
+                error:
+                  code: NOT_FOUND
+                  message: "Couldn't find Author with 'id'=999"
+        "500":
+          $ref: "#/components/responses/InternalError"
+
+components:
+  parameters:
+    AuthorId:
+      name: id
+      in: path
+      required: true
+      schema: { type: integer }
+      description: Author ID
+
+  responses:
+    InternalError:
+      description: Unexpected server error
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
+          example:
+            error:
+              code: INTERNAL_ERROR
+              message: "An unexpected error occurred"
+
+  schemas:
+    PaginationMeta:
+      type: object
+      properties:
+        page: { type: integer, example: 1 }
+        per_page: { type: integer, example: 20 }
+        total_items: { type: integer, example: 47 }
+        total_pages: { type: integer, example: 3 }
+
+    AuthorBase:
+      type: object
+      properties:
+        id: { type: integer }
+        first_name: { type: string, maxLength: 100 }
+        last_name: { type: string, maxLength: 100 }
+        bio: { type: string, maxLength: 2000, nullable: true }
+        birth_year: { type: integer, nullable: true }
+        death_year: { type: integer, nullable: true }
+        website: { type: string, maxLength: 500, nullable: true }
+        created_at: { type: string, format: date-time }
+        updated_at: { type: string, format: date-time }
+        book_count: { type: integer }
+
+    AuthorDetail:
+      allOf:
+        - $ref: "#/components/schemas/AuthorBase"
+        - type: object
+          properties:
+            recent_books:
+              type: array
+              items:
+                type: object
+                properties:
+                  id: { type: integer }
+                  title: { type: string }
+                  genre: { type: string }
+                  rating: { type: number, nullable: true }
+                  read_status: { type: string }
+                  date_added: { type: string, format: date-time }
+
+    AuthorInput:
+      type: object
+      required: [author]
+      properties:
+        author:
+          type: object
+          required: [first_name, last_name]
+          properties:
+            first_name: { type: string, minLength: 1, maxLength: 100 }
+            last_name: { type: string, minLength: 1, maxLength: 100 }
+            bio: { type: string, maxLength: 2000 }
+            birth_year: { type: integer }
+            death_year: { type: integer }
+            website: { type: string, format: uri }
+
+    AuthorListResponse:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: "#/components/schemas/AuthorBase"
+        meta:
+          $ref: "#/components/schemas/PaginationMeta"
+
+    AuthorDetailResponse:
+      type: object
+      properties:
+        data:
+          $ref: "#/components/schemas/AuthorDetail"
+
+    ErrorResponse:
+      type: object
+      properties:
+        error:
+          type: object
+          required: [code, message]
+          properties:
+            code: { type: string }
+            message: { type: string }
+
+    ValidationErrorResponse:
+      type: object
+      properties:
+        error:
+          type: object
+          required: [code, message, details]
+          properties:
+            code: { type: string }
+            message: { type: string }
+            details:
+              type: array
+              items:
+                type: object
+                properties:
+                  field: { type: string }
+                  message: { type: string }
+
+# ──────────────────────────── curl examples ────────────────────────────
+#
+# List authors:
+#   curl -s http://localhost:3000/api/authors?page=1&per_page=10&sort_by=last_name | jq
+#
+# List authors with search:
+#   curl -s "http://localhost:3000/api/authors?search=marquez" | jq
+#
+# Get author:
+#   curl -s http://localhost:3000/api/authors/1 | jq
+#
+# Create author:
+#   curl -s -X POST http://localhost:3000/api/authors \
+#     -H "Content-Type: application/json" \
+#     -d '{"author":{"first_name":"Chimamanda Ngozi","last_name":"Adichie","bio":"Nigerian writer whose works range from novels to short stories to nonfiction.","birth_year":1977,"website":"https://chimamanda.com"}}' | jq
+#
+# Update author:
+#   curl -s -X PUT http://localhost:3000/api/authors/1 \
+#     -H "Content-Type: application/json" \
+#     -d '{"author":{"bio":"Updated biography."}}' | jq
+#
+# Delete author:
+#   curl -s -X DELETE http://localhost:3000/api/authors/1 -w "\n%{http_code}\n"
+#
+# List books by author:
+#   curl -s http://localhost:3000/api/authors/1/books?page=1 | jq

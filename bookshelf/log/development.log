@@ -1,0 +1,32 @@
+  [1m[35m (0.4ms)[0m  [1m[35mCREATE TABLE "schema_migrations" ("version" varchar NOT NULL PRIMARY KEY)[0m
+  [1m[35m (0.1ms)[0m  [1m[35mCREATE TABLE "ar_internal_metadata" ("key" varchar NOT NULL PRIMARY KEY, "value" varchar, "created_at" datetime(6) NOT NULL, "updated_at" datetime(6) NOT NULL)[0m
+  [1m[36mActiveRecord::InternalMetadata Load (0.0ms)[0m  [1m[34mSELECT * FROM "ar_internal_metadata" WHERE "ar_internal_metadata"."key" = ? ORDER BY "ar_internal_metadata"."key" ASC LIMIT 1[0m  [[nil, "environment"]]
+  [1m[36mActiveRecord::InternalMetadata Create (0.1ms)[0m  [1m[32mINSERT INTO "ar_internal_metadata" ("key", "value", "created_at", "updated_at") VALUES ('environment', 'development', '2026-04-03 10:42:19.845426', '2026-04-03 10:42:19.845428') RETURNING "key"[0m
+  [1m[36mActiveRecord::SchemaMigration Load (0.0ms)[0m  [1m[34mSELECT "schema_migrations"."version" FROM "schema_migrations" ORDER BY "schema_migrations"."version" ASC[0m
+Migrating to CreateAuthors (20260403104203)
+  [1m[36mTRANSACTION (0.0ms)[0m  [1m[36mbegin transaction[0m
+  [1m[35m (0.4ms)[0m  [1m[35mCREATE TABLE "authors" ("id" integer PRIMARY KEY AUTOINCREMENT NOT NULL, "first_name" varchar(100) NOT NULL, "last_name" varchar(100) NOT NULL, "bio" text, "birth_year" integer, "death_year" integer, "website" varchar(500), "created_at" datetime(6) NOT NULL, "updated_at" datetime(6) NOT NULL)[0m
+  [1m[35m (0.0ms)[0m  [1m[35mCREATE INDEX "index_authors_on_last_name" ON "authors" ("last_name")[0m
+  [1m[35m (0.0ms)[0m  [1m[35mCREATE INDEX "index_authors_on_last_name_and_first_name" ON "authors" ("last_name", "first_name")[0m
+  [1m[36mActiveRecord::SchemaMigration Create (0.0ms)[0m  [1m[32mINSERT INTO "schema_migrations" ("version") VALUES ('20260403104203') RETURNING "version"[0m
+  [1m[36mTRANSACTION (0.1ms)[0m  [1m[36mcommit transaction[0m
+  [1m[36mActiveRecord::SchemaMigration Load (0.0ms)[0m  [1m[34mSELECT "schema_migrations"."version" FROM "schema_migrations" ORDER BY "schema_migrations"."version" ASC[0m
+  [1m[36mActiveRecord::InternalMetadata Load (0.2ms)[0m  [1m[34mSELECT * FROM "ar_internal_metadata" WHERE "ar_internal_metadata"."key" = ? ORDER BY "ar_internal_metadata"."key" ASC LIMIT 1[0m  [[nil, "environment"]]
+  [1m[36mActiveRecord::SchemaMigration Load (0.0ms)[0m  [1m[34mSELECT "schema_migrations"."version" FROM "schema_migrations" ORDER BY "schema_migrations"."version" ASC[0m
+Migrating to CreateBooks (20260403104841)
+  [1m[36mTRANSACTION (0.0ms)[0m  [1m[36mbegin transaction[0m
+  [1m[35m (1.0ms)[0m  [1m[35mCREATE TABLE "books" ("id" integer PRIMARY KEY AUTOINCREMENT NOT NULL, "title" varchar(300) NOT NULL, "isbn" varchar(13), "author_id" integer NOT NULL, "published_year" integer, "genre" varchar(50) NOT NULL, "description" text, "page_count" integer, "language" varchar(2) DEFAULT 'en' NOT NULL, "rating" decimal(2,1), "read_status" varchar(10) DEFAULT 'unread' NOT NULL, "date_added" datetime(6) NOT NULL, "created_at" datetime(6) NOT NULL, "updated_at" datetime(6) NOT NULL, CONSTRAINT "fk_rails_53d51ce16a"
+FOREIGN KEY ("author_id")
+  REFERENCES "authors" ("id")
+ ON DELETE RESTRICT)[0m
+  [1m[35m (0.0ms)[0m  [1m[35mCREATE INDEX "index_books_on_author_id" ON "books" ("author_id")[0m
+  [1m[35m (0.0ms)[0m  [1m[35mCREATE UNIQUE INDEX "index_books_on_isbn" ON "books" ("isbn") WHERE isbn IS NOT NULL[0m
+  [1m[35m (0.0ms)[0m  [1m[35mCREATE INDEX "index_books_on_genre" ON "books" ("genre")[0m
+  [1m[35m (0.0ms)[0m  [1m[35mCREATE INDEX "index_books_on_read_status" ON "books" ("read_status")[0m
+  [1m[35m (0.1ms)[0m  [1m[35mCREATE INDEX "index_books_on_language" ON "books" ("language")[0m
+  [1m[35m (0.0ms)[0m  [1m[35mCREATE INDEX "index_books_on_date_added" ON "books" ("date_added")[0m
+  [1m[35m (0.0ms)[0m  [1m[35mCREATE INDEX "index_books_on_rating" ON "books" ("rating")[0m
+  [1m[35m (0.0ms)[0m  [1m[35mCREATE INDEX "index_books_on_published_year" ON "books" ("published_year")[0m
+  [1m[36mActiveRecord::SchemaMigration Create (0.0ms)[0m  [1m[32mINSERT INTO "schema_migrations" ("version") VALUES ('20260403104841') RETURNING "version"[0m
+  [1m[36mTRANSACTION (0.2ms)[0m  [1m[36mcommit transaction[0m
+  [1m[36mActiveRecord::SchemaMigration Load (0.0ms)[0m  [1m[34mSELECT "schema_migrations"."version" FROM "schema_migrations" ORDER BY "schema_migrations"."version" ASC[0m
