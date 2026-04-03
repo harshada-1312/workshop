@@ -1,11 +1,11 @@
 export default function LoadingSpinner({ size = 'md' }) {
-  const sizes = { sm: 'h-5 w-5', md: 'h-8 w-8', lg: 'h-12 w-12' }
+  const sizes = { sm: 'h-6 w-6', md: 'h-10 w-10', lg: 'h-14 w-14' }
   return (
-    <div className="flex justify-center items-center py-12">
-      <svg className={`animate-spin text-indigo-600 ${sizes[size]}`} xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
-      </svg>
+    <div className="flex justify-center items-center py-16">
+      <div className="relative">
+        <div className={`${sizes[size]} rounded-full border-2 border-brand-100`} />
+        <div className={`absolute inset-0 ${sizes[size]} rounded-full border-2 border-transparent border-t-brand-500 animate-spin`} />
+      </div>
     </div>
   )
 }
