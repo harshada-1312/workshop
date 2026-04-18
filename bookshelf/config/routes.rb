@@ -3,6 +3,8 @@ Rails.application.routes.draw do
     resources :authors, only: [:index, :show, :create, :update, :destroy] do
       get :books, on: :member
     end
+
+    resources :books, only: [:index, :show, :create, :update, :destroy]
   end
 
   # Reveal health status on /up that returns 200 if the app boots with no exceptions, otherwise 500.

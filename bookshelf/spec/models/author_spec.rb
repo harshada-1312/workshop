@@ -70,9 +70,8 @@ RSpec.describe Author, type: :model do
 
   describe 'deletion protection' do
     it 'cannot delete author with books' do
-      pending 'Book model not yet created'
       author = create(:author)
-      create(:book, author: author)
+      create(:book, author: author, genre: 'Fiction')
       expect { author.destroy! }.to raise_error(ActiveRecord::RecordNotDestroyed)
     end
   end
